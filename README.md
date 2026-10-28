@@ -48,6 +48,8 @@ Sem as variáveis de banco, o deploy funciona em modo local e informa que a sinc
 
 ## 3. Ativar perfis sincronizados — Upstash Redis
 
+Na integração nativa do Marketplace Vercel, conecte o banco ao ambiente Production. O servidor reconhece automaticamente `KV_REST_API_URL` e `KV_REST_API_TOKEN`, injetadas pela integração; não é preciso copiar esses segredos. O par `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` abaixo continua disponível para configuração direta.
+
 A Vercel hospeda o aplicativo e as funções; o banco persiste os perfis. Esta implementação usa a API REST do Upstash Redis, adequada a funções sem servidor. **Não depende de arquivos gravados no disco da Vercel.**
 
 1. Crie/conecte um banco Redis no Upstash, pelo Marketplace/Storage da Vercel ou pelo painel do provedor.

@@ -1,7 +1,8 @@
 import {ApiError} from './service.js';
-export function configured(env=process.env){return !!(env.UPSTASH_REDIS_REST_URL&&env.UPSTASH_REDIS_REST_TOKEN);}
+export function credentials(env=process.env){return env.UPSTASH_REDIS_REST_URL&&env.UPSTASH_REDIS_REST_TOKEN?{url:env.UPSTASH_REDIS_REST_URL,token:env.UPSTASH_REDIS_REST_TOKEN}:{url:env.KV_REST_API_URL,token:env.KV_REST_API_TOKEN};}
+export function configured(env=process.env){const c=credentials(env);return !!(c.url&&c.token);}
 export class RedisStore {
-  constructor(env=process.env){this.url=env.UPSTASH_REDIS_REST_URL;this.token=env.UPSTASH_REDIS_REST_TOKEN;}
+  constructor(env=process.env){const c=credentials(env);this.url=c.url;this.token=c.token;}
   async command(...args){const r=await fetch(this.url,{method:'POST',headers:{Authorization:'Bearer '+this.token,'Content-Type':'application/json'},body:JSON.stringify(args),signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error('Banco temporariamente indisponível');const j=await r.json();if(j.error)throw Error('Falha no banco');return j.result;}
   async get(id){const raw=await this.command('GET','cr:profile:'+id);return raw?JSON.parse(raw):null;}
   async deleted(id){return !!await this.command('GET','cr:deleted:'+id);}
