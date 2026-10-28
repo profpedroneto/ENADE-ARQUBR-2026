@@ -2,7 +2,7 @@
 
 Projeto pronto para subir a um repositório e importar na Vercel. Preserva a aula de 200 minutos, os 10 módulos, modelos interativos, trilha de progresso, nome obrigatório, perfis locais, recuperação e relatório em PDF.
 
-**Não foi publicado nesta entrega.** Não há conta, repositório remoto ou banco configurados pelo assistente. O código de sincronização foi testado com banco simulado; a ativação e o teste na hospedagem dependem das configurações abaixo.
+Código disponível no repositório https://github.com/profpedroneto/ENADE-ARQUBR-2026. A sincronização e o painel administrativo foram testados com banco simulado; a ativação e o teste na hospedagem dependem das configurações abaixo.
 
 ## O que funciona sem configurar banco
 
@@ -88,7 +88,7 @@ O HTML não tem service worker: abrir a página pela primeira vez ou recarregar 
 - Escritas usam revisão e comparação atômica. Conflitos recebem dados atuais para conciliação; um aparelho antigo não deve reintroduzir uma tentativa reiniciada.
 - Se um reinício local encontrar uma versão online mais recente, a sincronização pausa e pede conferência pelo código. Não afirma que o reinício foi aplicado.
 - O relatório continua sendo um treino formativo, sem verificação de identidade acadêmica ou certificado. O gabarito continua no material de estudo.
-- Não há área administrativa privada, ranking ou acompanhamento central do professor nesta versão. A área de condução organiza o conteúdo e o professor recebe os PDFs, como no fluxo local combinado.
+- A área administrativa exige banco configurado e senha do professor. Ela consulta progresso sincronizado; não mede presença ou autoria. Os PDFs continuam sendo entregues pelo aluno.
 - O operador do projeto e o provedor do banco podem acessar os registros de nome e progresso. Ajuste a comunicação aos alunos às práticas da instituição. O uso não envia dados ao Google.
 
 ## Desenvolvimento e manutenção
@@ -107,3 +107,21 @@ Edite os arquivos em `src/`; `build.mjs` recompõe `public/index.html`. A biblio
 Testes incluídos cobrem criação idempotente, isolamento de homônimos, autorização por código, primeira resposta, concorrência, reinício, validação, limite de criação, origem e build. Os testes de integração do cliente foram realizados com DOM e serviço simulados; não houve deploy ou ensaio com Redis real nesta entrega.
 
 Referências oficiais: [GitHub na Vercel](https://vercel.com/docs/git/vercel-for-github), [Node.js Functions](https://vercel.com/docs/functions/runtimes/node-js), [Storage da Vercel](https://vercel.com/docs/storage), [Upstash REST](https://upstash.com/docs/redis/features/restapi).
+
+
+## Área protegida do professor
+
+O botão **Professor**, disponível antes de informar nome de aluno, abre um login com o e-mail `prof_pedroneto@camporeal.edu.br` e senha própria. O e-mail sozinho não concede acesso.
+
+1. No seu computador, dentro da pasta do projeto, execute `npm run admin:setup`.
+2. Guarde a senha gerada em seu gerenciador de senhas. O programa exibe também um valor iniciado por `scrypt:`.
+3. Na Vercel, adicione **ADMIN_PASSWORD_HASH** com o valor completo iniciado por `scrypt:` ao ambiente Production. As duas variáveis de banco também precisam estar configuradas.
+4. Faça novo deploy e entre pelo botão Professor com o e-mail e a senha gerada. Não envie a senha nem o hash ao GitHub ou pelo chat.
+
+O painel lista os alunos sincronizados, filtra nomes na página atual, mostra questões respondidas, acertos e telas consultadas por módulo. Há paginação e atualização a cada 30 segundos enquanto a lista está aberta. Uma lista vazia com Próxima página disponível pode ocorrer pela paginação do Redis. Não representa presença online ou confirmação de autoria das respostas.
+
+A sessão dura até oito horas, usando cookie HttpOnly, SameSite Strict e Secure na Vercel; a senha é verificada no servidor com scrypt. Dez tentativas de login por IP são permitidas a cada dez minutos. Sair invalida a sessão. Gerar e configurar um novo hash revoga as sessões anteriores.
+
+Para excluir, abra Ver progresso → Excluir perfil do banco e digite exatamente o nome do aluno. A operação verifica a revisão para evitar excluir um registro que mudou desde a consulta. Remove os dados do banco e mantém apenas um bloqueio pelo identificador aleatório para impedir recriação automática pela sincronização antiga. PDFs, backups e dados já salvos no aparelho do aluno não são apagados remotamente. Um novo perfil pode ser criado pelo aluno.
+
+Ensaio antes da aula: entre como aluno de teste, responda uma questão e aguarde confirmação online; entre no painel do professor em outro navegador, consulte esse perfil; exclua somente esse perfil de teste após digitar o nome; confirme que ele saiu da lista. Confira também que outro navegador sem sessão não consegue abrir `/api/admin?action=students`. Os testes automatizados usam dados simulados e não apagam alunos reais.
