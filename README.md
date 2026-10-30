@@ -1,5 +1,20 @@
 # Campo Real · Retomada ENADE · GitHub → Vercel
 
+## Revisão local de 29/10/2026 — ainda não publicada
+
+Esta revisão está em análise local. Não enviar para GitHub/Vercel antes da revisão do professor: um push pode disparar publicação automática.
+
+- `node build.mjs` atualiza `public/index.html`; `node dev.mjs` abre o servidor local; `node --test test/*.test.mjs` executa os testes.
+- Os dez modelos têm controles próprios, orientação de leitura e ampliação em diálogo. No computador, o desenho se ajusta à janela; no celular, a ampliação permite rolagem horizontal. Fechar ou pressionar Escape retorna ao conteúdo.
+- A navegação identifica Conceitos, Relações, Aplicação, Questões ENADE e Síntese. O próximo módulo é anunciado pelo nome. O cronômetro do aluno foi removido; o roteiro do professor continua separado.
+- `src/aprofundamento.js` complementa as 30 etapas teóricas. `src/comentarios.js` contém comentários didáticos autorais para cada uma das cinco alternativas dos 14 itens oficiais, exibidos depois da confirmação.
+- `src/questoes-oficiais.json` registra prova, ano, questão, gabarito e imagens originais. `public/questoes/` precisa acompanhar o HTML: as imagens não estão embutidas nele. O simulado tem 12 questões: 8 de estruturas e 4 de instalações/interfaces, reunidas ao final dos dois blocos. Os 14 registros originais permanecem no banco para preservar respostas históricas; dois ficam fora da seleção atual. Elétrica e incêndio permanecem conceituais, sem questão oficial nesta seleção.
+- Revisar desde o início preserva respostas. O servidor também preserva a primeira alternativa recebida, inclusive quando um cliente antigo pede substituição. A recuperação de cópias combina dados e preserva respostas já existentes no navegador.
+- O banco oficial tem identificador próprio, sem recalcular respostas antigas com novos gabaritos. A versão anterior permanece em `public/versao-anterior/`.
+- Professor → entrar com senha → Excluir aluno. A confirmação exige nome exato e revisão vigente; o servidor bloqueia recriação do perfil excluído. Cópias locais e PDFs já entregues não são apagados. A exclusão foi testada com banco simulado, sem remover alunos reais.
+
+Antes de publicação, revisar pedagogicamente os comentários, validar os fluxos com o banco do ambiente de teste e conferir o PDF. Esta seção descreve a revisão local; as instruções de hospedagem abaixo são para a etapa posterior.
+
 Projeto pronto para subir a um repositório e importar na Vercel. Preserva a aula de 200 minutos, os 10 módulos, modelos interativos, trilha de progresso, nome obrigatório, perfis locais, recuperação e relatório em PDF.
 
 Código disponível no repositório https://github.com/profpedroneto/ENADE-ARQUBR-2026. A sincronização e o painel administrativo foram testados com banco simulado; a ativação e o teste na hospedagem dependem das configurações abaixo.
@@ -127,3 +142,13 @@ A sessão dura até oito horas, usando cookie HttpOnly, SameSite Strict e Secure
 Para excluir, abra Ver progresso → Excluir perfil do banco e digite exatamente o nome do aluno. A operação verifica a revisão para evitar excluir um registro que mudou desde a consulta. Remove os dados do banco e mantém apenas um bloqueio pelo identificador aleatório para impedir recriação automática pela sincronização antiga. PDFs, backups e dados já salvos no aparelho do aluno não são apagados remotamente. Um novo perfil pode ser criado pelo aluno.
 
 Ensaio antes da aula: entre como aluno de teste, responda uma questão e aguarde confirmação online; entre no painel do professor em outro navegador, consulte esse perfil; exclua somente esse perfil de teste após digitar o nome; confirme que ele saiu da lista. Confira também que outro navegador sem sessão não consegue abrir `/api/admin?action=students`. Os testes automatizados usam dados simulados e não apagam alunos reais.
+
+## Cadernos de estudo e simulados
+
+A leitura tem três etapas por tema e não é interrompida por questões. O laboratório interativo fica em seção independente, com nove modelos; compatibilização final usa teoria e imagens estáticas. O ateliê de TCC trata de malhas de pilares, continuidade vertical, escolha de sistemas por programa e coordenação em planta e corte. Há glossário e nove ilustrações próprias em public/figuras/.
+
+O caderno de incêndio referencia o catálogo oficial do CBMPR, com NPT 011 (janeiro de 2024), NPT 009 (2014) e NPT 013. Informa a transição normativa anunciada para 5 de novembro de 2026 e orienta a conferir a edição vigente no protocolo. Material didático não substitui projeto e verificação normativa completos.
+
+## Publicação automática suspensa
+
+Esta revisão foi autorizada para o GitHub, sem publicação na Vercel. O arquivo `vercel.json` mantém `git.deploymentEnabled: false` para impedir deploys automáticos por push. Quando a publicação for autorizada, remover essa configuração ou alterá-la para `true` antes de enviar a versão a publicar.
