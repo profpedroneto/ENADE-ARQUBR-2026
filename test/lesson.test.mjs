@@ -71,3 +71,13 @@ test('formulário de senha exige confirmação e volta ao login após salvar',as
  el('admin-confirm-password').value='Nova-123';await el('admin-password-form').onsubmit(event);
  assert.equal(requests[0][0],'password');assert.equal(requests[0][2].newPassword,'Nova-123');assert(el('admin-content').innerHTML.includes('id="admin-login"'));assert(el('admin-message').textContent.includes('Senha alterada'));
 });
+
+test('marcadores distinguem resultado parcial e final; XP conta apenas dois simulados',()=>{
+ const c=vm.createContext({window:{}});vm.runInContext(['conteudo.js','banco.js','painel.js'].map(read).join('\n')+'\nglobalThis.d={modules,blockPerformance,xpFor};',c);
+ const answers={};assert.equal(c.d.blockPerformance(answers).label,'Não iniciado');
+ c.d.modules.forEach((m,i)=>{answers[i]={};m.quiz.forEach((q,j)=>answers[i][j]=q[2]);});
+ assert.equal(c.d.blockPerformance(answers).label,'Destaque');assert.equal(c.d.xpFor(answers).xp,420);assert.equal(c.d.xpFor(answers).completed,2);
+ delete answers[0][0];assert.equal(c.d.blockPerformance(answers).label,'Em andamento');assert.equal(c.d.blockPerformance(answers,1).done,true);assert.equal(c.d.xpFor(answers).completed,1);
+ c.d.modules.forEach((m,i)=>m.quiz.forEach((q,j)=>answers[i][j]=(q[2]+1)%5));assert.equal(c.d.blockPerformance(answers).label,'Reforçar conceitos');
+ let index=0;c.d.modules.forEach((m,i)=>m.quiz.forEach((q,j)=>{if(index++<8)answers[i][j]=q[2];}));assert.equal(c.d.blockPerformance(answers).label,'Bom avanço');
+});
