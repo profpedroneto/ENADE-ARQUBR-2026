@@ -27,6 +27,6 @@ function downloadClassReport(d){
  doc.addPage();y=18;line('Pontuação de todos os alunos',16);line('XP = 10 por resposta + 20 por acerto + 30 por simulado completo.',9);
  for(const r of d.students){if(y>245){doc.addPage();y=18;}line(r.name,12);line(`Pontos ${r.ok}/${TOTAL_QUESTIONS} | Respostas ${r.n}/${TOTAL_QUESTIONS} | XP ${r.xp} | ${r.n===TOTAL_QUESTIONS?'Concluído':'Parcial'}`,9);line(`Estruturas ${r.blocks[0].ok}/${r.blocks[0].total} | Instalações ${r.blocks[1].ok}/${r.blocks[1].total} | ID ${r.id}`,8);}
  doc.addPage();y=18;line('Respostas individuais por questão',16);
- for(const r of d.students){line(r.name+' · '+r.id,10);modules.forEach((m,i)=>m.quiz.forEach((q,j)=>{const a=r.progress.answers[i]?.[j];line(`${q[4].year} Q${q[4].number} | marcada: ${a===undefined?'pendente':'ABCDE'[a]} | gabarito: ${'ABCDE'[q[2]]} | ${a===undefined?'pendente':a===q[2]?'acerto':'erro'}`,8);}));y+=5;}
+ for(const r of d.students){if(y>165){doc.addPage();y=18;}line(r.name+' · '+r.id,10);modules.forEach((m,i)=>m.quiz.forEach((q,j)=>{const a=r.progress.answers[i]?.[j];line(`${q[4].year} Q${q[4].number} | marcada: ${a===undefined?'pendente':'ABCDE'[a]} | gabarito: ${'ABCDE'[q[2]]} | ${a===undefined?'pendente':a===q[2]?'acerto':'erro'}`,8);}));y+=5;}
  const pages=doc.getNumberOfPages();for(let p=1;p<=pages;p++){doc.setPage(p);doc.setFontSize(7);doc.text(`Relatório formativo · ${p}/${pages}`,16,290);}doc.save('Relatorio-completo-turma-ENADE.pdf');
 }
