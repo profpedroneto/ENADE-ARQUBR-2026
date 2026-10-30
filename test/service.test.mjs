@@ -20,3 +20,27 @@ test('banco oficial não recebe respostas da versão anterior nem questões inex
  const reset=await service.save(c.code,{revision:first.revision,attemptId:first.attemptId,mode:'replace',progress:{bankId,answers:{0:{0:3}}}});
  assert.equal(reset.progress.answers[0][0],0);assert.equal(reset.attemptId,p.attemptId);
 });
+
+class ShortStore extends MemoryStore {
+ values=new Map(); collision=true;
+ async command(cmd,...args){
+  if(cmd==='GET')return this.values.get(args[0])??null;
+  if(cmd==='EVAL'){const [, ,reverse,forward,id,code]=args;if(this.values.has(reverse))return this.values.get(reverse);if(this.collision){this.collision=false;return '';}if(this.values.has(forward))return '';this.values.set(forward,id);this.values.set(reverse,code);return code;}
+  throw Error(cmd);
+ }
+ async rate(key){if(key.startsWith('short-fail:')){const k='cr:rate:'+key,n=(this.values.get(k)||0)+1;this.values.set(k,n);return n;}return super.rate(key);}
+}
+test('código curto preserva identidade, respostas e código antigo, mesmo após colisão',async()=>{
+ const store=new ShortStore(),service=makeService(store,'test-ip'),c=credentials();
+ const p=await service.create({name:'Aluno Teste',id:c.id,secret:c.secret});
+ const {code}=await service.shortCode(c.code);assert.match(code,/^\d{6}$/);
+ assert.equal((await service.shortCode(c.code)).code,code);assert.equal((await service.shortCode(code)).code,code);
+ const saved=await service.save(code,{revision:0,attemptId:p.attemptId,mode:'merge',progress:{answers:{0:{0:2}}}});
+ assert.equal(saved.progress.answers[0][0],2);assert.equal((await service.read(c.code)).progress.answers[0][0],2);
+ store.records.delete(c.id);await assert.rejects(service.read(code),e=>e.status===401);assert.equal(store.values.get('cr:short:'+code),c.id);
+});
+test('vinte códigos incorretos limitam tentativas posteriores',async()=>{
+ const store=new ShortStore(),service=makeService(store,'test-ip');
+ for(let i=0;i<20;i++)await assert.rejects(service.read('000000'),e=>e.status===401);
+ await assert.rejects(service.read('000000'),e=>e.status===429);
+});

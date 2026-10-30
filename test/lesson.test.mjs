@@ -81,3 +81,19 @@ test('marcadores distinguem resultado parcial e final; XP conta apenas dois simu
  c.d.modules.forEach((m,i)=>m.quiz.forEach((q,j)=>answers[i][j]=(q[2]+1)%5));assert.equal(c.d.blockPerformance(answers).label,'Reforçar conceitos');
  let index=0;c.d.modules.forEach((m,i)=>m.quiz.forEach((q,j)=>{if(index++<8)answers[i][j]=q[2];}));assert.equal(c.d.blockPerformance(answers).label,'Bom avanço');
 });
+
+ test('relatório calcula média incluindo pendências e ignora bancos antigos',()=>{
+ const c=vm.createContext({window:{}});
+ vm.runInContext(['conteudo.js','banco.js','painel.js','relatorio-turma.js'].map(read).join('\n')+'\nglobalThis.reportApi={summarizeClass,modules,BANK_ID};',c);
+ const {summarizeClass,modules,BANK_ID}=c.reportApi;
+ const answers=Object.fromEntries(modules.map((m,i)=>[i,Object.fromEntries(m.quiz.map((q,j)=>[j,q[2]]))]));
+ const r=summarizeClass([{id:'a',name:'Ana',progress:{bankId:BANK_ID,answers}},{id:'b',name:'Bruno',progress:{bankId:BANK_ID,answers:{}}},{id:'c',name:'Antigo',progress:{bankId:'legacy',answers}}]);
+ assert.equal(r.n,2);assert.equal(r.mean,6);assert.equal(r.meanXp,210);assert.equal(r.completed,1);assert.equal(r.answered,12);assert.equal(r.axes.length,8);assert(r.axes.every(a=>a.value===50));assert.equal(summarizeClass([]).mean,0);
+ });
+
+test('relatório busca todas as páginas e remove duplicatas da consulta',async()=>{
+ const button={disabled:false},pages=[{cursor:'12',students:[{id:'a',name:'Ana',progress:{bankId:'inep-au-2026-10-v2',answers:{}}}]},{cursor:'0',students:[{id:'a',name:'Ana',progress:{bankId:'inep-au-2026-10-v2',answers:{}}},{id:'b',name:'Bruno',progress:{bankId:'inep-au-2026-10-v2',answers:{}}}]}];let calls=0;
+ const c=vm.createContext({window:{},$:()=>button,adminMessage:()=>{},adminRequest:async()=>pages[calls++]});
+ vm.runInContext(['conteudo.js','banco.js','painel.js','relatorio-turma.js'].map(read).join('\n')+'\nrenderFullClassReport=()=>{};',c);
+ await vm.runInContext('loadFullClassReport()',c);assert.equal(calls,2);assert.equal(button.disabled,false);assert.equal(vm.runInContext('fullClassReport.n',c),2);
+});

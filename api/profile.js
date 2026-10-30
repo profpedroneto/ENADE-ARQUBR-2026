@@ -1,2 +1,2 @@
 import {endpoint,jsonBody,bearer} from '../server/http.js';
-export default endpoint(['GET','POST'],async(req,service)=>req.method==='GET'?{profile:await service.read(bearer(req))}:{profile:await service.create(await jsonBody(req),String(req.headers['x-vercel-forwarded-for']||req.headers['x-forwarded-for']||'unknown').split(',')[0].trim())});
+export default endpoint(['GET','POST'],async(req,service)=>req.method==='POST'&&new URL(req.url,'https://localhost').searchParams.get('action')==='short-code'?await service.shortCode(bearer(req)):req.method==='GET'?{profile:await service.read(bearer(req))}:{profile:await service.create(await jsonBody(req),String(req.headers['x-vercel-forwarded-for']||req.headers['x-forwarded-for']||'unknown').split(',')[0].trim())});
