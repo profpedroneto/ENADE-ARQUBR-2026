@@ -3,7 +3,7 @@ let KEY='campo-real-enade-oficial-v2';
 let state={answers:{},seen:{},current:0,step:0}, storageOK=true, screen='home',selection=null;
 try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved&&saved.version===1){for(let i=0;i<modules.length;i++){const a=saved.answers?.[i];if(a&&typeof a==='object'){state.answers[i]={};for(let q=0;q<3;q++)if(Number.isInteger(a[q])&&a[q]>=0&&a[q]<5)state.answers[i][q]=a[q];}if(Array.isArray(saved.seen?.[i]))state.seen[i]=saved.seen[i].filter(x=>Number.isInteger(x)&&x>=0&&x<3);}if(Number.isInteger(saved.current)&&saved.current>=0&&saved.current<10)state.current=saved.current;if(Number.isInteger(saved.step)&&saved.step>=0&&saved.step<=4)state.step=saved.step;}}catch(e){storageOK=false;}
 const $=id=>document.getElementById(id);
-function save(){durableSave();}
+function save(){durableSave();updateActiveStudent();}
 function answered(i){return modules[i].quiz.filter((_,j)=>Number.isInteger(state.answers[i]?.[j])).length;}
 function correct(i){return modules[i].quiz.reduce((n,q,j)=>n+(state.answers[i]?.[j]===q[2]?1:0),0);}
 function percent(a,b){return b?Math.round(a/b*100):0;}
