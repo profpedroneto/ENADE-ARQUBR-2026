@@ -60,3 +60,14 @@ test('recuperação guarda respostas históricas fora da seleção atual',()=>{
  const restored=c.decode(JSON.stringify({version:1,bankId:'inep-au-2026-10-v2',answers:{3:{2:1},9:{1:4}}}));
  assert.equal(restored.answers[3][2],1);assert.equal(restored.answers[9][1],4);
 });
+
+test('formulário de senha exige confirmação e volta ao login após salvar',async()=>{
+ const elements=new Map(),requests=[];const el=id=>{if(!elements.has(id))elements.set(id,{innerHTML:'',value:'',textContent:'',focus(){}});return elements.get(id);};
+ const c=vm.createContext({$:el});vm.runInContext(read('admin.js')+'\nglobalThis.render=renderAdminPassword;globalThis.setup=fn=>{adminRequest=fn;};',c);
+ c.setup(async(...args)=>{requests.push(args);return{ok:true};});c.render();
+ el('admin-current-password').value='Atual-123';el('admin-new-password').value='Nova-123';el('admin-confirm-password').value='Outra-123';
+ const event={preventDefault(){},submitter:{disabled:false,isConnected:true}};
+ await el('admin-password-form').onsubmit(event);assert.equal(requests.length,0);
+ el('admin-confirm-password').value='Nova-123';await el('admin-password-form').onsubmit(event);
+ assert.equal(requests[0][0],'password');assert.equal(requests[0][2].newPassword,'Nova-123');assert(el('admin-content').innerHTML.includes('id="admin-login"'));assert(el('admin-message').textContent.includes('Senha alterada'));
+});

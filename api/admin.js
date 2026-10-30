@@ -19,6 +19,7 @@ export default async function handler(req,res){
     if(req.method!=='GET'&&req.headers['x-admin-csrf']!==session.csrf)throw new ApiError(403,'Atualize o painel antes de continuar.');
     if(action==='session'&&req.method==='GET')return reply(res,200,{email:ADMIN_EMAIL,csrf:session.csrf});
     if(action==='students'&&req.method==='GET')return reply(res,200,await admin.list(url.searchParams.get('cursor')||'0'));
+    if(action==='password'&&req.method==='POST'){const body=await jsonBody(req);const result=await admin.changePassword(token,body.currentPassword,body.newPassword);cookie('');return reply(res,200,result);}
     if(action==='logout'&&req.method==='POST'){await admin.logout(token);cookie('');return reply(res,200,{ok:true});}
     if(action==='student'&&req.method==='DELETE'){const body=await jsonBody(req);return reply(res,200,await admin.remove(body.id,body.revision,body.name));}
     throw new ApiError(404,'Operação não encontrada.');

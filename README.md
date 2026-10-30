@@ -152,3 +152,7 @@ O caderno de incêndio referencia o catálogo oficial do CBMPR, com NPT 011 (jan
 ## Publicação automática suspensa
 
 Esta revisão foi autorizada para o GitHub, sem publicação na Vercel. O arquivo `vercel.json` mantém `git.deploymentEnabled: false` para impedir deploys automáticos por push. Quando a publicação for autorizada, remover essa configuração ou alterá-la para `true` antes de enviar a versão a publicar.
+
+## Troca de senha do professor
+
+Professor → Alterar senha permite definir uma nova senha confirmando a atual. A troca é salva no banco como hash scrypt e encerra todas as sessões. Não precisa de novo deploy. A variável ADMIN_PASSWORD_HASH é a credencial inicial e de recuperação: substituir seu hash e fazer deploy redefine o acesso, invalidando as sessões e as trocas vinculadas ao hash anterior. Nunca colocar senhas ou hashes no repositório.

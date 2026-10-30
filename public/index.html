@@ -974,7 +974,8 @@ function renderAdminLogin(message=''){
   $('admin-login').onsubmit=async event=>{event.preventDefault();const button=event.submitter;button.disabled=true;adminMessage('Validando acesso…');try{const session=await adminRequest('login','POST',{email:$('admin-email').value.trim(),password:$('admin-password').value});$('admin-password').value='';adminCsrf=session.csrf;adminCursor='0';renderAdminShell();await loadAdminStudents();}catch(e){adminMessage(e.message);}finally{if(button.isConnected)button.disabled=false;}};
 }
 function renderAdminShell(){
-  $('admin-content').innerHTML=`<div class="actions"><button class="button secondary" id="admin-refresh">Atualizar lista</button><button class="button secondary" id="admin-first">Primeira página</button><button class="button secondary" id="admin-next">Próxima página</button><button class="button secondary" id="admin-logout">Sair</button></div><p class="tiny">Perfis do banco de questões oficiais. Perfis antigos continuam disponíveis na versão anterior. Nomes são informados pelos alunos; homônimos podem ter perfis distintos. Atualização automática a cada 30 segundos enquanto a lista estiver aberta. Ao visualizar um aluno, use Atualizar lista para consultar novas gravações.</p><label for="admin-filter">Filtrar nomes nesta página</label><input id="admin-filter" type="search" placeholder="Nome do aluno"><div id="admin-list"></div><div id="admin-detail"></div>`;
+  $('admin-content').innerHTML=`<div class="actions"><button class="button secondary" id="admin-refresh">Atualizar lista</button><button class="button secondary" id="admin-first">Primeira página</button><button class="button secondary" id="admin-next">Próxima página</button><button class="button secondary" id="admin-password-open">Alterar senha</button><button class="button secondary" id="admin-logout">Sair</button></div><p class="tiny">Perfis do banco de questões oficiais. Perfis antigos continuam disponíveis na versão anterior. Nomes são informados pelos alunos; homônimos podem ter perfis distintos. Atualização automática a cada 30 segundos enquanto a lista estiver aberta. Ao visualizar um aluno, use Atualizar lista para consultar novas gravações.</p><label for="admin-filter">Filtrar nomes nesta página</label><input id="admin-filter" type="search" placeholder="Nome do aluno"><div id="admin-list"></div><div id="admin-detail"></div>`;
+  $('admin-password-open').onclick=renderAdminPassword;
   $('admin-refresh').onclick=loadAdminStudents;$('admin-first').onclick=()=>{adminCursor='0';loadAdminStudents();};$('admin-next').onclick=()=>{adminCursor=adminNext;loadAdminStudents();};$('admin-filter').oninput=renderAdminRows;
   $('admin-logout').onclick=async()=>{try{await adminRequest('logout','POST',{});renderAdminLogin('Sessão encerrada.');}catch(e){adminMessage(e.message);}};
 }
@@ -995,6 +996,20 @@ function renderAdminDetail(r, deleting=false){
   $('admin-detail').scrollIntoView?.({behavior:'smooth',block:'start'});
 }
 function initAdmin(){const button=document.createElement('button');button.type='button';button.id='professor-login';button.textContent='Professor';button.onclick=showAdmin;document.querySelector('.top-actions').append(button);setInterval(()=>{if(adminCsrf&&$('admin-list')&&document.visibilityState!=='hidden'&&!$('admin-detail')?.innerHTML)loadAdminStudents();},30000);}
+
+function renderAdminPassword(){
+  adminMessage('');
+  $('admin-content').innerHTML=`<form id="admin-password-form" class="card admin-login"><h2>Alterar senha</h2><label for="admin-current-password">Senha atual</label><input id="admin-current-password" type="password" autocomplete="current-password" required maxlength="256"><label for="admin-new-password">Nova senha</label><input id="admin-new-password" type="password" autocomplete="new-password" required minlength="7" maxlength="256"><label for="admin-confirm-password">Confirmar nova senha</label><input id="admin-confirm-password" type="password" autocomplete="new-password" required minlength="7" maxlength="256"><p class="tiny">Use de 7 a 256 caracteres. Ao salvar, todas as sessões serão encerradas. A nova senha vale imediatamente.</p><div class="actions"><button class="button" type="submit">Salvar nova senha</button><button class="button secondary" type="button" id="admin-password-cancel">Voltar ao painel</button></div></form>`;
+  $('admin-password-cancel').onclick=()=>{renderAdminShell();loadAdminStudents();};
+  $('admin-password-form').onsubmit=async event=>{
+    event.preventDefault();
+    if($('admin-new-password').value!==$('admin-confirm-password').value){adminMessage('A confirmação deve ser igual à nova senha.');return;}
+    const button=event.submitter;button.disabled=true;
+    try{await adminRequest('password','POST',{currentPassword:$('admin-current-password').value,newPassword:$('admin-new-password').value});renderAdminLogin('Senha alterada. Entre com a nova senha.');}
+    catch(e){adminMessage(e.message);}finally{if(button.isConnected)button.disabled=false;}
+  };
+  $('admin-current-password').focus();
+}
 
 // Gravações síncronas: respostas confirmadas não dependem de timers ou rede.
 let recoveryNotice='',saveLocation='none',savedAt='',resumeQuestion=null,pendingRestore=null;
